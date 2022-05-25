@@ -27,39 +27,7 @@ export default function CodeEdit() {
   }, [])
 
   if (initialValues === null) {
-    return (
-      <SkeletonPage>
-        <Layout>
-          <Layout.Section>
-            <Card sectioned>
-              <SkeletonBodyText />
-            </Card>
-            <Card sectioned>
-              <TextContainer>
-                <SkeletonDisplayText size="small" />
-                <SkeletonBodyText />
-              </TextContainer>
-            </Card>
-            <Card sectioned>
-              <TextContainer>
-                <SkeletonDisplayText size="small" />
-                <SkeletonBodyText />
-              </TextContainer>
-            </Card>
-          </Layout.Section>
-          <Layout.Section secondary>
-            <Card>
-              <Card.Section>
-                <TextContainer>
-                  <SkeletonBodyText lines={5} />
-                  <SkeletonDisplayText size="small" />
-                </TextContainer>
-              </Card.Section>
-            </Card>
-          </Layout.Section>
-        </Layout>
-      </SkeletonPage>
-    )
+    return null
   }
 
   return <CodeEditForm id={id} initialValues={initialValues} />

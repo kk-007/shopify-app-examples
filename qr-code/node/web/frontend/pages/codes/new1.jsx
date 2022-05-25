@@ -14,14 +14,12 @@ import {
   Icon,
   Stack,
   TextStyle,
-  Image,
 } from '@shopify/polaris'
 import {
   ContextualSaveBar,
   TitleBar,
   ResourcePicker,
   useNavigate,
-  useAppBridge,
 } from '@shopify/app-bridge-react'
 import { ImageMajor, AlertMinor } from '@shopify/polaris-icons'
 import { useShopifyQuery } from 'hooks/useShopifyQuery'
@@ -29,6 +27,8 @@ import { gql } from 'graphql-request'
 import { useForm, useField, notEmptyString } from '@shopify/react-form'
 
 import { useAuthenticatedFetch } from 'hooks/useAuthenticatedFetch'
+
+import {CodeEditForm} from 'components/CodeEditForm'
 
 const NO_DISCOUNT_OPTION = { label: 'No discount', value: '' }
 
@@ -75,39 +75,11 @@ const DISCOUNTS_QUERY = gql`
 
 const DISCOUNT_CODES = {}
 
-export function CodeEditForm({ initialValues }) {
-  const [formValues, setFormValues] = useState(initialValues)
+export default function NewCode() {
   const [showResourcePicker, setShowResourcePicker] = useState(false)
-  const [selectedProduct, setSelectedProduct] = useState(formValues?.product)
+  const [selectedProduct, setSelectedProduct] = useState({})
   const navigate = useNavigate()
   const fetch = useAuthenticatedFetch()
-
-  const onSubmit = useCallback(async (body) => {
-    const parsedBody = body
-    parsedBody.destination = parsedBody.destination[0]
-    let response
-    console.log({formValues})
-    if (formValues?.id) {
-      response = await fetch(`/api/qrcodes/${formValues.id}`, {
-        method: 'PATCH',
-        body: JSON.stringify(parsedBody),
-        headers: { 'Content-Type': 'application/json' },
-      })
-    } else {
-      response = await fetch(`/api/qrcodes`, {
-        method: 'POST',
-        body: JSON.stringify(parsedBody),
-        headers: { 'Content-Type': 'application/json' },
-      })
-    }
-
-    if (response.ok) {
-      const responseBody = await response.json()
-      console.log({responseBody})
-      setFormValues(responseBody)
-    }
-  },
-  [formValues])
 
   const {
     fields: {
@@ -126,28 +98,39 @@ export function CodeEditForm({ initialValues }) {
   } = useForm({
     fields: {
       title: useField({
-        value: formValues?.title || '',
+        value: '',
         validates: [notEmptyString('Please name your QR code')],
       }),
       productId: useField({
-        value: formValues?.product?.id || '',
+        value: '',
         validates: [notEmptyString('Please select a product')],
       }),
-      variantId: useField(formValues?.variantId || ''),
-      handle: useField(formValues?.handle || ''),
-      destination: useField([formValues?.destination] || ['product']),
-      discountId: useField(
-        formValues?.discountId || NO_DISCOUNT_OPTION.value
-      ),
-      discountCode: useField(formValues?.discountCode || ''),
+      variantId: useField(''),
+      handle: useField(''),
+      destination: useField(['product']),
+      discountId: useField(NO_DISCOUNT_OPTION.value),
+      discountCode: useField(''),
     },
-    onSubmit,
-    makeCleanAfterSubmit: true
+    onSubmit: async (body) => {
+      const parsedBody = body
+      parsedBody.destination = parsedBody.destination[0]
+
+      const response = await fetch('/api/qrcodes', {
+        method: 'POST',
+        body: JSON.stringify(parsedBody),
+        headers: { 'Content-Type': 'application/json' },
+      })
+
+      if (response.ok) {
+        const responseBody = await response.json()
+
+        reset()
+        navigate(`/codes/edit/${responseBody.id}`)
+      }
+    },
   })
 
-  const app = useAppBridge()
-
-  const handleProductChange = useCallback(({ selection }) => {
+  const handleProductChange = useCallback(({ id, selection }) => {
     // TODO: Storing product details, and product ID seperately is a hack
     // This will be fixed when this form queries the product data
     setSelectedProduct({
@@ -163,7 +146,7 @@ export function CodeEditForm({ initialValues }) {
 
   const handleDiscountChange = useCallback((id) => {
     discountId.onChange(id)
-    discountCode.onChange(DISCOUNT_CODES[id] || '')
+    discountCode.onChange(DISCOUNT_CODES[id])
   }, [])
 
   const toggleResourcePicker = useCallback(
@@ -309,12 +292,17 @@ export function CodeEditForm({ initialValues }) {
               </Card>
               <Card
                 sectioned
-                title="Discount"
+                title="Discount code"
                 actions={[
                   {
                     content: 'Create discount',
                     onAction: () =>
-                      navigate(`${app.hostOrigin}/admin/discounts`),
+                      navigate({
+                        name: 'Discount',
+                        resource: {
+                          create: true,
+                        }
+                      })
                   },
                 ]}
               >
@@ -332,13 +320,10 @@ export function CodeEditForm({ initialValues }) {
         </Layout.Section>
         <Layout.Section secondary>
           <Card sectioned title="QR Code">
-            <EmptyState
-              imageContained={true}
-              largeImage={formValues?.imageUrl}
-            >
-              {formValues?.imageUrl ? null : <p>Your QR code will appear here after you save.</p>}
+            <EmptyState>
+              <p>Your QR code will appear here after you save.</p>
             </EmptyState>
-            <Button fullWidth primary download url={formValues?.imageUrl}>
+            <Button fullWidth primary disabled>
               Download
             </Button>
           </Card>
