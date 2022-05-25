@@ -73,39 +73,43 @@ const DISCOUNTS_QUERY = gql`
 
 const DISCOUNT_CODES = {}
 
-export function CodeEditForm({ initialValues }) {
-  const [formValues, setFormValues] = useState(initialValues)
+export function CodeEditForm({ initialValues, submitFetch }) {
   const [showResourcePicker, setShowResourcePicker] = useState(false)
-  const [selectedProduct, setSelectedProduct] = useState(formValues?.product)
+  const [selectedProduct, setSelectedProduct] = useState(initialValues?.product)
   const navigate = useNavigate()
   const fetch = useAuthenticatedFetch()
 
-  const onSubmit = useCallback(async (body) => {
+  const onSubmit = async (body) => {
     const parsedBody = body
     parsedBody.destination = parsedBody.destination[0]
-    let response
-    console.log({formValues})
-    if (formValues?.id) {
-      response = await fetch(`/api/qrcodes/${formValues.id}`, {
-        method: 'PATCH',
-        body: JSON.stringify(parsedBody),
-        headers: { 'Content-Type': 'application/json' },
-      })
-    } else {
-      response = await fetch(`/api/qrcodes`, {
-        method: 'POST',
-        body: JSON.stringify(parsedBody),
-        headers: { 'Content-Type': 'application/json' },
-      })
-    }
+    console.log({initialValues})
 
-    if (response.ok) {
-      const responseBody = await response.json()
-      console.log({responseBody})
-      setFormValues(responseBody)
-    }
-  },
-  [formValues])
+    await submitFetch(parsedBody)
+    // if (initialValues?.id) {
+    //   const patchResponse = await fetch(`/api/qrcodes/${initialValues.id}`, {
+    //     method: 'PATCH',
+    //     body: JSON.stringify(parsedBody),
+    //     headers: { 'Content-Type': 'application/json' },
+    //   })
+    //   setResponse(patchResponse)
+    // } else {
+    //   const postResponse = await fetch(`/api/qrcodes`, {
+    //     method: 'POST',
+    //     body: JSON.stringify(parsedBody),
+    //     headers: { 'Content-Type': 'application/json' },
+    //   })
+    //   setResponse(postResponse)
+    // }
+  }
+
+
+    // if (response?.ok) {
+    //   const responseBody = await response.json()
+    //   console.log({responseBody})
+    //   setinitialValues(responseBody)
+    //   console.log('in res.ok', {initialValues})
+    // }
+
 
   const {
     fields: {
@@ -124,20 +128,20 @@ export function CodeEditForm({ initialValues }) {
   } = useForm({
     fields: {
       title: useField({
-        value: formValues?.title || '',
+        value: initialValues?.title || '',
         validates: [notEmptyString('Please name your QR code')],
       }),
       productId: useField({
-        value: formValues?.product?.id || '',
+        value: initialValues?.product?.id || '',
         validates: [notEmptyString('Please select a product')],
       }),
-      variantId: useField(formValues?.variantId || ''),
-      handle: useField(formValues?.handle || ''),
-      destination: useField([formValues?.destination] || ['product']),
+      variantId: useField(initialValues?.variantId || ''),
+      handle: useField(initialValues?.handle || ''),
+      destination: useField([initialValues?.destination] || ['product']),
       discountId: useField(
-        formValues?.discountId || NO_DISCOUNT_OPTION.value
+        initialValues?.discountId || NO_DISCOUNT_OPTION.value
       ),
-      discountCode: useField(formValues?.discountCode || ''),
+      discountCode: useField(initialValues?.discountCode || ''),
     },
     onSubmit,
     makeCleanAfterSubmit: true
@@ -180,7 +184,7 @@ export function CodeEditForm({ initialValues }) {
   })
 
   async function deleteQRCode() {
-    const response = await fetch(`/api/qrcodes/${id}`, {
+    const response = await fetch(`/api/qrcodes/${initialValues.id}`, {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
     })
@@ -349,11 +353,11 @@ export function CodeEditForm({ initialValues }) {
           <Card sectioned title="QR Code">
             <EmptyState
               imageContained={true}
-              largeImage={formValues?.imageUrl}
+              largeImage={initialValues?.imageUrl}
             >
-              {formValues?.imageUrl ? null : <p>Your QR code will appear here after you save.</p>}
+              {initialValues?.imageUrl ? null : <p>Your QR code will appear here after you save.</p>}
             </EmptyState>
-            <Button fullWidth primary download url={formValues?.imageUrl}>
+            <Button fullWidth primary download url={initialValues?.imageUrl}>
               Download
             </Button>
           </Card>
