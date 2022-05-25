@@ -1,13 +1,5 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import {
-  Card,
-  Layout,
-  SkeletonBodyText,
-  SkeletonDisplayText,
-  SkeletonPage,
-  TextContainer,
-} from '@shopify/polaris'
 
 import { CodeEditForm } from 'components/CodeEditForm'
 import { useAuthenticatedFetch } from 'hooks/useAuthenticatedFetch'
