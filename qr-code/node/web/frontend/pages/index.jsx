@@ -7,7 +7,7 @@ export default function HomePage() {
   const navigate = useNavigate()
 
   return (
-    <Page fullWidth>
+    <Page>
       <TitleBar
         primaryAction={{
           content: 'Create QR code',

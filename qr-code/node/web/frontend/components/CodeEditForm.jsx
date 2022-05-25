@@ -207,7 +207,7 @@ export function CodeEditForm({ initialValues }) {
     : []
 
   return (
-    <Page fullWidth>
+    <Page>
       <ContextualSaveBar
         saveAction={{
           label: 'Save',

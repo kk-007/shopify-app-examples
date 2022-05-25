@@ -183,7 +183,7 @@ export default function NewCode() {
     : []
 
   return (
-    <Page fullWidth>
+    <Page>
       <ContextualSaveBar
         saveAction={{
           label: 'Save',
