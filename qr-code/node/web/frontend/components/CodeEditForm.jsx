@@ -133,7 +133,7 @@ export function CodeEditForm({ initialValues }) {
       }),
       variantId: useField(formValues?.variantId || ''),
       handle: useField(formValues?.handle || ''),
-      destination: useField([formValues?.destination] || ['product']),
+      destination: useField(formValues?.destination ? [formValues.destination] : ['product']),
       discountId: useField(
         formValues?.discountId || NO_DISCOUNT_OPTION.value
       ),
